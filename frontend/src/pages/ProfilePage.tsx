@@ -1,0 +1,226 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import api, { getAssetUrl } from '../services/api';
+
+const ProfilePage: React.FC = () => {
+  const { id } = useParams<{ id?: string }>();
+  const { user: currentUser, refreshUser } = useAuth();
+  const [profileUser, setProfileUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isOwnProfile = !id || String(id) === String(currentUser?.id);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      try {
+        if (isOwnProfile) {
+          setProfileUser(currentUser);
+        } else {
+          const res = await api.get(`/auth/users/${id}`);
+          setProfileUser(res.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [id, currentUser]);
+
+  // Đồng bộ hóa form khi profileUser data thay đổi
+  useEffect(() => {
+    if (profileUser) {
+      setFullName(profileUser.fullName || '');
+      setEmail(profileUser.email || '');
+      setDateOfBirth(profileUser.dateOfBirth?.split('T')[0] || '');
+    }
+  }, [profileUser]);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Ảnh quá lớn, vui lòng chọn ảnh dưới 2MB');
+        return;
+      }
+      setAvatarFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleUploadAvatar = async () => {
+    if (!avatarFile) return;
+    setIsUpdating(true);
+    const formData = new FormData();
+    formData.append('file', avatarFile);
+    try {
+      await api.post('/profile/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      await refreshUser();
+      alert('Cập nhật ảnh đại diện thành công');
+      setAvatarFile(null);
+      setPreviewUrl(null);
+    } catch (error: any) {
+      alert('Lỗi: ' + (error.response?.data?.message || 'Không thể tải ảnh lên'));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    try {
+      await api.put('/profile', { 
+        fullName, 
+        email, 
+        dateOfBirth: dateOfBirth || null // Gửi null nếu rỗng
+      });
+      await refreshUser();
+      alert('Cập nhật thông tin thành công');
+    } catch (error: any) {
+      alert('Lỗi: ' + (error.response?.data?.message || 'Không thể cập nhật hồ sơ'));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  if (loading) return <div className="text-center mt-12">Đang tải hồ sơ...</div>;
+  if (!profileUser) return <div className="text-center mt-12">Không tìm thấy người dùng</div>;
+
+  return (
+    <div className="course-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
+      <h2 className="section-title mb-6">{isOwnProfile ? 'Hồ sơ cá nhân' : 'Thông tin thành viên'}</h2>
+      
+      <div className="flex items-center gap-6 mb-8 pb-8" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ position: 'relative' }}>
+          <img 
+            src={previewUrl || getAssetUrl(profileUser?.avatarUrl) || 'https://ui-avatars.com/api/?background=304c7d&color=fff&name=' + (profileUser?.fullName || profileUser?.name || 'U')} 
+            alt="Avatar" 
+            style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }}
+          />
+        </div>
+        <div>
+          <h3 className="mb-2" style={{ color: 'var(--text-primary)' }}>{profileUser?.fullName}</h3>
+          <p className="text-secondary mb-4" style={{ fontSize: '0.875rem' }}>{profileUser?.role === 'Teacher' ? 'Giảng viên' : (profileUser?.role === 'Admin' ? 'Quản trị viên' : 'Sinh viên')} • {profileUser?.userCode}</p>
+          {isOwnProfile && (
+            <div className="flex gap-2">
+              <input type="file" accept="image/*" onChange={handleAvatarChange} ref={fileInputRef} style={{ display: 'none' }} />
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="btn btn-outline">Chọn ảnh mới</button>
+              {avatarFile && (
+                <button onClick={handleUploadAvatar} className="btn btn-primary" disabled={isUpdating}>
+                  {isUpdating ? 'Đang tải...' : 'Tải lên'}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className={isOwnProfile ? "grid-cols-2" : ""} style={{ gap: '2rem' }}>
+        <div>
+          <h3 className="mb-4" style={{ color: 'var(--text-primary)' }}>Thông tin chi tiết</h3>
+          <form onSubmit={handleUpdateProfile}>
+            <div className="form-group">
+              <label>Họ và tên</label>
+              <input 
+                type="text" 
+                value={fullName} 
+                onChange={e => setFullName(e.target.value)}
+                className="form-control"
+                required
+                disabled={!isOwnProfile}
+              />
+            </div>
+            <div className="form-group">
+              <label>Địa chỉ Email</label>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)}
+                className="form-control"
+                required
+                disabled={!isOwnProfile}
+              />
+            </div>
+            <div className="form-group">
+              <label>Ngày sinh</label>
+              <input 
+                type="date" 
+                value={dateOfBirth} 
+                onChange={e => setDateOfBirth(e.target.value)}
+                className="form-control"
+                disabled={!isOwnProfile}
+              />
+            </div>
+            {isOwnProfile && (
+              <button type="submit" className="btn btn-primary mt-2" disabled={isUpdating}>
+                {isUpdating ? 'Đang lưu...' : 'Lưu thay đổi'}
+              </button>
+            )}
+          </form>
+        </div>
+
+        {isOwnProfile && (
+          <div>
+            <h3 className="mb-4" style={{ color: 'var(--text-primary)' }}>Đổi mật khẩu</h3>
+            <ChangePasswordForm />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ChangePasswordForm: React.FC = () => {
+  const [current, setCurrent] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirm, setConfirm] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPass !== confirm) {
+      alert('Mật khẩu xác nhận không khớp');
+      return;
+    }
+    try {
+      await api.post('/profile/change-password', { currentPassword: current, newPassword: newPass });
+      alert('Đổi mật khẩu thành công');
+      setCurrent(''); setNewPass(''); setConfirm('');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="form-group">
+        <label>Mật khẩu hiện tại</label>
+        <input type="password" value={current} onChange={e => setCurrent(e.target.value)} className="form-control" required />
+      </div>
+      <div className="form-group">
+        <label>Mật khẩu mới</label>
+        <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} className="form-control" required />
+      </div>
+      <div className="form-group">
+        <label>Xác nhận mật khẩu mới</label>
+        <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} className="form-control" required />
+      </div>
+      <button type="submit" className="btn btn-outline mt-2">Cập nhật mật khẩu</button>
+    </form>
+  );
+};
+
+export default ProfilePage;
