@@ -55,8 +55,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// QUAN TRỌNG: UseCors phải nằm ở ĐÂY, ngay sau Build và trước bất kỳ middleware nào khác
-app.UseCors("ReactApp");
+// Cấu hình CORS "tối thượng" - Cho phép tất cả mọi nguồn để chắc chắn chạy được trên Render
+app.UseCors(policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyHeader()
+    .AllowAnyMethod());
 
 using (var scope = app.Services.CreateScope())
 {
