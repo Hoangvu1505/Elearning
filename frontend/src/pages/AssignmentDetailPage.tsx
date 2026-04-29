@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api, { getAssetUrl } from '../services/api';
 import { Assignment, Submission } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import Navbar from '../components/common/Navbar';
 
 const AssignmentDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -82,7 +81,6 @@ const AssignmentDetailPage: React.FC = () => {
 
     return (
         <div className="page-container">
-            <Navbar />
             <main className="max-w-4xl mx-auto py-8 px-4">
                 <button onClick={() => navigate(-1)} className="mb-6 text-primary hover:underline flex items-center gap-2">
                     ← Quay lại lớp học

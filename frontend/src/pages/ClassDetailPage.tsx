@@ -87,7 +87,29 @@ const ClassDetailPage: React.FC = () => {
     if (!enrollStudentId) return;
     setEnrollLoading(true);
     try {
-      await api.post(`/classes/${id}/enroll`, { studentId: parseInt(enrollStudentId) });
+      // Tìm kiếm học sinh trên frontend trước để lấy ID số thực tế
+      const usersRes = await api.get('/auth/users');
+      const allUsers = usersRes.data as any[];
+      
+      const foundUser = allUsers.find(u => 
+        (u.userCode && u.userCode.toLowerCase() === enrollStudentId.toLowerCase()) || 
+        String(u.id) === enrollStudentId
+      );
+
+      if (!foundUser) {
+        alert('Không tìm thấy người dùng với ID hoặc Mã số này!');
+        setEnrollLoading(false);
+        return;
+      }
+
+      if (foundUser.role !== 'Student') {
+        alert('Người dùng này không phải là học sinh!');
+        setEnrollLoading(false);
+        return;
+      }
+
+      // Gửi ID số thực tế cho Backend
+      await api.post(`/classes/${id}/enroll`, { studentId: foundUser.id });
       alert('Thêm học sinh thành công!');
       setEnrollStudentId('');
       fetchStudents();
@@ -338,13 +360,12 @@ const ClassDetailPage: React.FC = () => {
                   <div style={{ flex: 1 }}>
                     <label className="text-secondary text-sm block mb-1">Thêm học sinh vào lớp (nhập ID)</label>
                     <input
-                      type="number"
+                      type="text"
                       className="form-input"
-                      placeholder="ID học sinh"
+                      placeholder="ID hoặc Mã số (VD: HS01)"
                       value={enrollStudentId}
                       onChange={e => setEnrollStudentId(e.target.value)}
                       required
-                      min="1"
                     />
                   </div>
                   <button type="submit" className="btn btn-primary" disabled={enrollLoading}>
