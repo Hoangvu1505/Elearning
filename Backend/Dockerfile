@@ -20,6 +20,7 @@ RUN mkdir -p wwwroot/uploads
 
 # Render sử dụng port 10000 mặc định hoặc bạn có thể cấu hình
 ENV ASPNETCORE_URLS=http://+:10000
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
 EXPOSE 10000
 
 ENTRYPOINT ["dotnet", "ElearningPlatform.dll"]
