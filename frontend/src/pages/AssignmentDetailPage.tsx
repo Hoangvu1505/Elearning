@@ -15,32 +15,33 @@ const AssignmentDetailPage: React.FC = () => {
     const [submitting, setSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            try {
-                const res = await api.get(`/assignments/${id}`);
-                setAssignment(res.data);
+    const loadData = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
+        try {
+            const res = await api.get(`/assignments/${id}`);
+            setAssignment(res.data);
 
-                if (isTeacher) {
-                    const subRes = await api.get(`/submissions/assignment/${id}`);
-                    setAllSubmissions(subRes.data);
-                } else {
-                    try {
-                        const mySubRes = await api.get(`/submissions/assignment/${id}/my`);
-                        setMySubmission(mySubRes.data);
-                    } catch (e) {
-                        // Chưa nộp bài
-                        setMySubmission(null);
-                    }
+            if (isTeacher) {
+                const subRes = await api.get(`/submissions/assignment/${id}`);
+                setAllSubmissions(subRes.data);
+            } else {
+                try {
+                    const mySubRes = await api.get(`/submissions/assignment/${id}/my`);
+                    setMySubmission(mySubRes.data);
+                } catch (e) {
+                    // Chưa nộp bài
+                    setMySubmission(null);
                 }
-            } catch (error) {
-                console.error("Failed to load assignment detail", error);
-            } finally {
-                setLoading(false);
             }
-        };
-        loadData();
+        } catch (error) {
+            console.error("Failed to load assignment detail", error);
+        } finally {
+            if (showLoading) setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData(true);
     }, [id, isTeacher]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -67,8 +68,9 @@ const AssignmentDetailPage: React.FC = () => {
                 });
                 alert("Nộp bài thành công!");
             }
-            // Reload
-            window.location.reload();
+            // Reset selection and refresh data without hard reload
+            setSelectedFile(null);
+            loadData(false);
         } catch (error: any) {
             alert("Lỗi: " + (error.response?.data?.message || "Không thể nộp bài"));
         } finally {
