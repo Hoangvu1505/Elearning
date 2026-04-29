@@ -54,15 +54,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-    context.Database.EnsureCreated(); // Chỉ tạo mới nếu DB chưa tồn tại
-    await SeedData.Initialize(services);
-}
-
+// QUAN TRỌNG: UseCors phải nằm ở ĐÂY, ngay sau Build và trước bất kỳ middleware nào khác
 app.UseCors("ReactApp");
+
+using (var scope = app.Services.CreateScope())
 
 var wwwrootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
 if (!Directory.Exists(wwwrootPath)) Directory.CreateDirectory(wwwrootPath);
