@@ -46,9 +46,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactApp", policy =>
     {
-        policy.AllowAnyOrigin() // Cho phép tất cả trong lúc deploy để tránh lỗi CORS ban đầu
+        policy.WithOrigins("https://elearning-vip.onrender.com", "http://localhost:5173", "http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // Thêm cái này để hỗ trợ cookie/auth nếu cần
     });
 });
 
