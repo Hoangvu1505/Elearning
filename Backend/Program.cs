@@ -85,3 +85,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+app.MapGet("/ping", () => "Server is awake!");
