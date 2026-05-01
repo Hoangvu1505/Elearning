@@ -44,7 +44,7 @@ const Dashboard: React.FC = () => {
             </span>
           </div>
           <p className="text-secondary mb-6" style={{ fontSize: '0.95rem' }}>Các môn học đang diễn ra trong học kỳ này.</p>
-          <Link to="/classes" className="btn btn-outline w-full text-center">Xem chi tiết</Link>
+          <Link to="/classes" className="btn btn-outline w-full text-center block">Xem chi tiết</Link>
         </div>
 
         <div className="course-card">

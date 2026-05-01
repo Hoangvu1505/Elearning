@@ -14,6 +14,7 @@ namespace ElearningPlatform.Data
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<Submission> Submissions { get; set; }
         public DbSet<Lecture> Lectures { get; set; }
+        public DbSet<StoredFile> StoredFiles { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

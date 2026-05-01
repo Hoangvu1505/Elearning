@@ -12,6 +12,7 @@ const Navbar: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [imgError, setImgError] = useState(false);
 
   const isActive = (path: string) => location.pathname === path ? 'active' : '';
 
@@ -91,8 +92,13 @@ const Navbar: React.FC = () => {
         {isAuthenticated ? (
           <div className="flex items-center gap-2">
             <div className="user-avatar" style={{ overflow: 'hidden', padding: 0 }}>
-              {user?.avatarUrl ? (
-                <img src={getAssetUrl(user.avatarUrl) || ''} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {(user?.avatarUrl && !imgError) ? (
+                <img 
+                  src={getAssetUrl(user.avatarUrl) || ''} 
+                  alt="Avatar" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  onError={() => setImgError(true)}
+                />
               ) : (
                 user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'
               )}

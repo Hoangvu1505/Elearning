@@ -15,7 +15,12 @@ const ProfilePage: React.FC = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [profileUser]);
 
   const isOwnProfile = !id || String(id) === String(currentUser?.id);
 
@@ -107,9 +112,10 @@ const ProfilePage: React.FC = () => {
       <div className="flex items-center gap-6 mb-8 pb-8" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div style={{ position: 'relative' }}>
           <img 
-            src={previewUrl || getAssetUrl(profileUser?.avatarUrl) || 'https://ui-avatars.com/api/?background=304c7d&color=fff&name=' + (profileUser?.fullName || profileUser?.name || 'U')} 
+            src={previewUrl || (!imgError && getAssetUrl(profileUser?.avatarUrl)) || 'https://ui-avatars.com/api/?background=304c7d&color=fff&name=' + (profileUser?.fullName || profileUser?.name || 'U')} 
             alt="Avatar" 
             style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }}
+            onError={() => setImgError(true)}
           />
         </div>
         <div>

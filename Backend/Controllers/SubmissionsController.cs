@@ -76,7 +76,7 @@ namespace ElearningPlatform.Controllers
             // Xóa file cũ
             if (!string.IsNullOrEmpty(submission.FilePath))
             {
-                _fileService.DeleteFile(submission.FilePath);
+                await _fileService.DeleteFile(submission.FilePath);
             }
 
             // Lưu file mới

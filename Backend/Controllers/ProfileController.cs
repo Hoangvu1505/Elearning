@@ -51,7 +51,7 @@ namespace ElearningPlatform.Controllers
             if (user == null) return NotFound();
             
             if (!string.IsNullOrEmpty(user.AvatarUrl))
-                _fileService.DeleteFile(user.AvatarUrl);
+                await _fileService.DeleteFile(user.AvatarUrl);
                 
             var avatarPath = await _fileService.SaveFileAsync(file, "avatars");
             user.AvatarUrl = avatarPath;

@@ -1,13 +1,16 @@
+using ElearningPlatform.Data;
+using ElearningPlatform.Models;
+
 namespace ElearningPlatform.Services
 {
     public class FileService : IFileService
     {
-        private readonly IWebHostEnvironment _env;
+        private readonly AppDbContext _context;
         private const long MaxFileSize = 20 * 1024 * 1024; // 20MB
         
-        public FileService(IWebHostEnvironment env)
+        public FileService(AppDbContext context)
         {
-            _env = env;
+            _context = context;
         }
         
         public async Task<string> SaveFileAsync(IFormFile file, string subFolder)
@@ -15,23 +18,38 @@ namespace ElearningPlatform.Services
             if (file.Length > MaxFileSize)
                 throw new Exception("File vượt quá dung lượng cho phép (20MB)");
                 
-            var uploadsFolder = Path.Combine(_env.ContentRootPath, "wwwroot", "uploads", subFolder);
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
             
-            var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            var storedFile = new StoredFile
+            {
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                Content = ms.ToArray()
+            };
             
-            using var stream = new FileStream(filePath, FileMode.Create);
-            await file.CopyToAsync(stream);
+            _context.StoredFiles.Add(storedFile);
+            await _context.SaveChangesAsync();
             
-            return Path.Combine("uploads", subFolder, uniqueFileName).Replace("\\", "/");
+            // Trả về đường dẫn dạng API proxy
+            return $"api/files/{storedFile.Id}";
         }
         
-        public void DeleteFile(string filePath)
+        public async Task DeleteFile(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) return;
-            var fullPath = Path.Combine(_env.ContentRootPath, "wwwroot", filePath);
-            if (File.Exists(fullPath)) File.Delete(fullPath);
+            
+            // Lấy ID từ chuỗi "api/files/{id}"
+            var parts = filePath.Split('/');
+            if (parts.Length > 0 && int.TryParse(parts[^1], out int fileId))
+            {
+                var file = await _context.StoredFiles.FindAsync(fileId);
+                if (file != null)
+                {
+                    _context.StoredFiles.Remove(file);
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
     }
 }
