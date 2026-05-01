@@ -83,6 +83,5 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-app.Run();
 app.MapGet("/ping", () => "Server is awake!");
+app.Run();
