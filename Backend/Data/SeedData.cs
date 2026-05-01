@@ -172,6 +172,20 @@ namespace ElearningPlatform.Data
                         CONSTRAINT [FK_Lectures_Classes_ClassId] FOREIGN KEY ([ClassId]) REFERENCES [Classes] ([Id]) ON DELETE CASCADE
                     );
                 END");
+
+            // Create StoredFiles table if missing
+            await context.Database.ExecuteSqlRawAsync(@"
+                IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[StoredFiles]') AND type in (N'U'))
+                BEGIN
+                    CREATE TABLE [StoredFiles] (
+                        [Id] int NOT NULL IDENTITY,
+                        [FileName] nvarchar(max) NOT NULL,
+                        [ContentType] nvarchar(max) NOT NULL,
+                        [Content] varbinary(max) NOT NULL,
+                        [CreatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+                        CONSTRAINT [PK_StoredFiles] PRIMARY KEY ([Id])
+                    );
+                END");
         }
 
         private static void CreatePasswordHash(string password, out byte[] hash, out byte[] salt)

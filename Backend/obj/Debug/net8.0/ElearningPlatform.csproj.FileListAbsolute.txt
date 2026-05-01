@@ -133,3 +133,4 @@ C:\Users\ThinkPad\.gemini\antigravity\scratch\ElearningPlatform\Backend\obj\Debu
 C:\Users\ThinkPad\.gemini\antigravity\scratch\ElearningPlatform\Backend\obj\Debug\net8.0\ElearningPlatform.genruntimeconfig.cache
 C:\Users\ThinkPad\.gemini\antigravity\scratch\ElearningPlatform\Backend\obj\Debug\net8.0\ref\ElearningPlatform.dll
 C:\Users\ThinkPad\.gemini\antigravity\scratch\ElearningPlatform\Backend\bin\Debug\net8.0\ElearningPlatform.staticwebassets.runtime.json
+C:\Users\ThinkPad\.gemini\antigravity\scratch\ElearningPlatform\Backend\obj\Debug\net8.0\ElearningPlatform.sourcelink.json
