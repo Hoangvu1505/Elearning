@@ -14,6 +14,27 @@ interface EnrolledStudent {
   enrolledAt: string;
   userCode?: string;
 }
+const getYouTubeEmbedUrl = (text?: string): string | null => {
+  if (!text) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const urls = text.match(urlRegex);
+  if (urls) {
+    for (const url of urls) {
+      const match = url.match(regExp);
+      if (match && match[2].length === 11) {
+        return `https://www.youtube.com/embed/${match[2]}`;
+      }
+    }
+  } else {
+    const match = text.match(regExp);
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}`;
+    }
+  }
+  return null;
+};
+
 const ClassDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -314,12 +335,12 @@ const ClassDetailPage: React.FC = () => {
                       <h3 className="course-card-title mb-0" style={{ color: 'var(--primary-color)' }}>{a.title}</h3>
                       <div className="flex gap-2 items-center">
                         {canManage && (
-                          <button
-                            className="btn"
-                            style={{ padding: '2px 8px', fontSize: '0.75rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                          <button 
+                            className="btn" 
+                            style={{ padding: '4px 8px', fontSize: '0.8rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                             onClick={() => handleDeleteAssignment(a.id, a.title)}
                           >
-                            Xóa
+                            🗑️ Xóa
                           </button>
                         )}
                         {a.hasSubmitted && <span className="badge badge-success" style={{ height: 'fit-content' }}>Đã nộp</span>}
@@ -355,33 +376,60 @@ const ClassDetailPage: React.FC = () => {
             ) : (
               lectures.map(l => (
                 <div key={l.id} className="course-card mb-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex gap-2 items-center mb-2">
-                        <h3 className="course-card-title mb-0" style={{ color: 'var(--primary-color)' }}>{l.title}</h3>
-                        {canManage && (
-                          <button
-                            className="btn"
-                            style={{ padding: '2px 8px', fontSize: '0.75rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                            onClick={() => handleDeleteLecture(l.id, l.title)}
-                          >
-                            Xóa
-                          </button>
-                        )}
-                      </div>
+                  <div className="flex justify-between items-start" style={{ gap: '1rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 className="course-card-title mb-2" style={{ color: 'var(--primary-color)' }}>{l.title}</h3>
                       <p className="course-card-meta mb-2" style={{ fontSize: '1rem', whiteSpace: 'pre-line' }}>{l.content}</p>
+                      {(() => {
+                        const embedUrl = getYouTubeEmbedUrl(l.content);
+                        return embedUrl ? (
+                          <div 
+                            className="youtube-container" 
+                            style={{ 
+                              marginTop: '1rem', 
+                              width: '100%', 
+                              maxWidth: '560px', 
+                              aspectRatio: '16/9', 
+                              borderRadius: '8px', 
+                              overflow: 'hidden', 
+                              boxShadow: 'var(--shadow-md)' 
+                            }}
+                          >
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              src={embedUrl}
+                              title="YouTube video player"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                            ></iframe>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
-                    {l.filePath && (
-                      <a
-                        href={getAssetUrl(l.filePath) || '#'}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn btn-outline"
-                        style={{ padding: '4px 12px', fontSize: '0.85rem' }}
-                      >
-                        Tải tài liệu: {l.fileName}
-                      </a>
-                    )}
+                    <div className="flex gap-2 items-center" style={{ flexShrink: 0, flexWrap: 'wrap' }}>
+                      {l.filePath && (
+                        <a 
+                          href={getAssetUrl(l.filePath) || '#'} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="btn btn-outline"
+                          style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                        >
+                          📂 Tải tài liệu: {l.fileName}
+                        </a>
+                      )}
+                      {canManage && (
+                        <button 
+                          className="btn" 
+                          style={{ padding: '6px 12px', fontSize: '0.85rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                          onClick={() => handleDeleteLecture(l.id, l.title)}
+                        >
+                          🗑️ Xóa
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <small className="text-secondary">{new Date(l.createdAt).toLocaleString('vi-VN')}</small>
                 </div>

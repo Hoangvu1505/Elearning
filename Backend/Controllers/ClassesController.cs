@@ -111,7 +111,7 @@ namespace ElearningPlatform.Controllers
                     Id = a.Id,
                     Title = a.Title,
                     Content = a.Content,
-                    CreatedAt = a.CreatedAt.ToString("o")
+                    CreatedAt = DateTime.SpecifyKind(a.CreatedAt, DateTimeKind.Utc).ToString("o")
                 })
                 .ToListAsync();
 
@@ -139,8 +139,8 @@ namespace ElearningPlatform.Controllers
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    DueDate = a.DueDate,
-                    CreatedAt = a.CreatedAt,
+                    DueDate = DateTime.SpecifyKind(a.DueDate, DateTimeKind.Utc),
+                    CreatedAt = DateTime.SpecifyKind(a.CreatedAt, DateTimeKind.Utc),
                     HasSubmitted = hasSubmitted
                 });
             }
@@ -241,7 +241,7 @@ namespace ElearningPlatform.Controllers
                     Content = l.Content,
                     FileName = l.FileName,
                     FilePath = l.FilePath,
-                    CreatedAt = l.CreatedAt
+                    CreatedAt = DateTime.SpecifyKind(l.CreatedAt, DateTimeKind.Utc)
                 })
                 .ToListAsync();
 
