@@ -77,21 +77,34 @@ const ClassDetailPage: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const [classRes, announceRes, assignRes, lectureRes] = await Promise.all([
-        api.get(`/classes/${id}`),
-        api.get(`/classes/${id}/announcements`),
-        api.get(`/classes/${id}/assignments`),
-        api.get(`/classes/${id}/lectures`),
-      ]);
+      const classRes = await api.get(`/classes/${id}`);
       setClassData(classRes.data);
+    } catch (error) {
+      console.error('Failed to fetch class info', error);
+    }
+
+    try {
+      const announceRes = await api.get(`/classes/${id}/announcements`);
       setAnnouncements(announceRes.data);
+    } catch (error) {
+      console.error('Failed to fetch announcements', error);
+    }
+
+    try {
+      const assignRes = await api.get(`/classes/${id}/assignments`);
       setAssignments(assignRes.data);
+    } catch (error) {
+      console.error('Failed to fetch assignments', error);
+    }
+
+    try {
+      const lectureRes = await api.get(`/classes/${id}/lectures`);
       setLectures(lectureRes.data);
     } catch (error) {
-      console.error('Failed to fetch class data', error);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch lectures', error);
     }
+
+    setLoading(false);
   };
 
   const fetchStudents = async () => {
@@ -153,6 +166,17 @@ const ClassDetailPage: React.FC = () => {
       fetchData();
     } catch (error: any) {
       alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa bài giảng'));
+    }
+  };
+
+  const handleDeleteAnnouncement = async (announcementId: string | number, title: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa thông báo "${title}"?`)) return;
+    try {
+      await api.delete(`/classes/announcements/${announcementId}`);
+      alert('Xóa thông báo thành công!');
+      fetchData();
+    } catch (error: any) {
+      alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa thông báo'));
     }
   };
 
@@ -321,7 +345,18 @@ const ClassDetailPage: React.FC = () => {
             ) : (
               announcements.map(a => (
                 <div key={a.id} className="course-card mb-4">
-                  <h3 className="course-card-title mb-2" style={{ color: 'var(--primary-color)' }}>{a.title}</h3>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="course-card-title mb-0" style={{ color: 'var(--primary-color)' }}>{a.title}</h3>
+                    {canManage && (
+                      <button 
+                        className="btn" 
+                        style={{ padding: '4px 8px', fontSize: '0.8rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                        onClick={() => handleDeleteAnnouncement(a.id, a.title)}
+                      >
+                        🗑️ Xóa
+                      </button>
+                    )}
+                  </div>
                   <p className="course-card-meta mb-2" style={{ fontSize: '1rem', whiteSpace: 'pre-line' }}>{a.content}</p>
                   <small className="text-secondary">{new Date(a.createdAt).toLocaleString('vi-VN')}</small>
                 </div>

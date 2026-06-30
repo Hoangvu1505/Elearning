@@ -430,5 +430,17 @@ namespace ElearningPlatform.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = "Đã xóa bài giảng thành công" });
         }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpDelete("announcements/{announcementId}")]
+        public async Task<IActionResult> DeleteAnnouncement(int announcementId)
+        {
+            var announcement = await _context.Announcements.FindAsync(announcementId);
+            if (announcement == null) return NotFound(new { message = "Không tìm thấy thông báo" });
+
+            _context.Announcements.Remove(announcement);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã xóa thông báo thành công" });
+        }
     }
 }
