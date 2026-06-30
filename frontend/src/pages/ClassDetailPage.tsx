@@ -112,6 +112,28 @@ const ClassDetailPage: React.FC = () => {
     }
   };
 
+  const handleDeleteAssignment = async (assignmentId: number, title: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa bài tập "${title}"? Tất cả bài nộp của học sinh cũng sẽ bị xóa.`)) return;
+    try {
+      await api.delete(`/classes/assignments/${assignmentId}`);
+      alert('Xóa bài tập thành công!');
+      fetchData();
+    } catch (error: any) {
+      alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa bài tập'));
+    }
+  };
+
+  const handleDeleteLecture = async (lectureId: number, title: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa bài giảng "${title}"?`)) return;
+    try {
+      await api.delete(`/classes/lectures/${lectureId}`);
+      alert('Xóa bài giảng thành công!');
+      fetchData();
+    } catch (error: any) {
+      alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa bài giảng'));
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [id]);
@@ -290,7 +312,18 @@ const ClassDetailPage: React.FC = () => {
                   <div key={a.id} className="course-card flex flex-col h-full" style={{ display: 'flex', flexDirection: 'column' }}>
                     <div className="flex justify-between mb-2">
                       <h3 className="course-card-title mb-0" style={{ color: 'var(--primary-color)' }}>{a.title}</h3>
-                      {a.hasSubmitted && <span className="badge badge-success" style={{ height: 'fit-content' }}>Đã nộp</span>}
+                      <div className="flex gap-2 items-center">
+                        {canManage && (
+                          <button 
+                            className="btn" 
+                            style={{ padding: '2px 8px', fontSize: '0.75rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            onClick={() => handleDeleteAssignment(a.id, a.title)}
+                          >
+                            Xóa
+                          </button>
+                        )}
+                        {a.hasSubmitted && <span className="badge badge-success" style={{ height: 'fit-content' }}>Đã nộp</span>}
+                      </div>
                     </div>
                     <p className="course-card-meta mb-4" style={{ flexGrow: 1, whiteSpace: 'pre-line' }}>{a.description}</p>
                     <div className="flex items-center justify-between mt-auto pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
@@ -324,7 +357,18 @@ const ClassDetailPage: React.FC = () => {
                 <div key={l.id} className="course-card mb-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="course-card-title mb-2" style={{ color: 'var(--primary-color)' }}>{l.title}</h3>
+                      <div className="flex gap-2 items-center mb-2">
+                        <h3 className="course-card-title mb-0" style={{ color: 'var(--primary-color)' }}>{l.title}</h3>
+                        {canManage && (
+                          <button 
+                            className="btn" 
+                            style={{ padding: '2px 8px', fontSize: '0.75rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                            onClick={() => handleDeleteLecture(l.id, l.title)}
+                          >
+                            Xóa
+                          </button>
+                        )}
+                      </div>
                       <p className="course-card-meta mb-2" style={{ fontSize: '1rem', whiteSpace: 'pre-line' }}>{l.content}</p>
                     </div>
                     {l.filePath && (
