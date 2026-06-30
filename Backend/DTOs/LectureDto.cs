@@ -14,6 +14,6 @@ namespace ElearningPlatform.DTOs
     {
         public string Title { get; set; } = string.Empty;
         public string? Content { get; set; }
-        public IFormFile? File { get; set; }
+        public IFormFile? File { get; set; } = null;
     }
 }
