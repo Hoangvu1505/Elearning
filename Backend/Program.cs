@@ -4,11 +4,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ElearningPlatform.Data;
 using ElearningPlatform.Services;
+using ElearningPlatform.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 // Ưu tiên lấy Connection String từ biến môi trường (Render)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -40,6 +42,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"] ?? "ElearningClient",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
         };
+
+        // Support JWT Token in query string for SignalR connections
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddCors(options =>
@@ -55,11 +72,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Cấu hình CORS "tối thượng" - Cho phép tất cả mọi nguồn để chắc chắn chạy được trên Render
+// CORS configuration to allow credentials (needed for SignalR) with explicit origins
 app.UseCors(policy => policy
-    .AllowAnyOrigin()
+    .WithOrigins("https://elearning-vip.onrender.com", "http://localhost:5173", "http://localhost:3000", "http://localhost:5000")
     .AllowAnyHeader()
-    .AllowAnyMethod());
+    .AllowAnyMethod()
+    .AllowCredentials());
 
 using (var scope = app.Services.CreateScope())
 {
@@ -83,5 +101,6 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ClassHub>("/hubs/class");
 app.MapGet("/ping", () => "Server is awake!");
 app.Run();

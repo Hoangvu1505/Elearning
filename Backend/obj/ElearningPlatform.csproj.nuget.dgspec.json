@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ThinkPad\\.gemini\\antigravity\\scratch\\ElearningPlatform\\Backend\\ElearningPlatform.csproj": {}
+    "C:\\Users\\ThinkPad\\Documents\\codeDao\\ElearningPlatform\\Backend\\ElearningPlatform.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ThinkPad\\.gemini\\antigravity\\scratch\\ElearningPlatform\\Backend\\ElearningPlatform.csproj": {
+    "C:\\Users\\ThinkPad\\Documents\\codeDao\\ElearningPlatform\\Backend\\ElearningPlatform.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ThinkPad\\.gemini\\antigravity\\scratch\\ElearningPlatform\\Backend\\ElearningPlatform.csproj",
+        "projectUniqueName": "C:\\Users\\ThinkPad\\Documents\\codeDao\\ElearningPlatform\\Backend\\ElearningPlatform.csproj",
         "projectName": "ElearningPlatform",
-        "projectPath": "C:\\Users\\ThinkPad\\.gemini\\antigravity\\scratch\\ElearningPlatform\\Backend\\ElearningPlatform.csproj",
+        "projectPath": "C:\\Users\\ThinkPad\\Documents\\codeDao\\ElearningPlatform\\Backend\\ElearningPlatform.csproj",
         "packagesPath": "C:\\Users\\ThinkPad\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ThinkPad\\.gemini\\antigravity\\scratch\\ElearningPlatform\\Backend\\obj\\",
+        "outputPath": "C:\\Users\\ThinkPad\\Documents\\codeDao\\ElearningPlatform\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
