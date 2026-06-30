@@ -4,6 +4,7 @@ import api from '../services/api';
 import { Class, Announcement, Assignment, Lecture } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { getAssetUrl } from '../services/api';
+import QuizTab from '../components/QuizTab';
 
 // Thông tin học sinh trong lớp
 interface EnrolledStudent {
@@ -23,7 +24,7 @@ const ClassDetailPage: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'announcements' | 'assignments' | 'members' | 'lectures'>('announcements');
+  const [activeTab, setActiveTab] = useState<'announcements' | 'assignments' | 'members' | 'lectures' | 'quizzes'>('announcements');
 
   // === State quản lý thành viên ===
   const [students, setStudents] = useState<EnrolledStudent[]>([]);
@@ -247,6 +248,12 @@ const ClassDetailPage: React.FC = () => {
         >
           Bài giảng
         </button>
+        <button 
+          className={`tab-btn ${activeTab === 'quizzes' ? 'active' : ''}`}
+          onClick={() => setActiveTab('quizzes')}
+        >
+          Trắc nghiệm
+        </button>
         {(isAdmin || isTeacher) && (
           <button
             className={`tab-btn ${activeTab === 'members' ? 'active' : ''}`}
@@ -346,6 +353,10 @@ const ClassDetailPage: React.FC = () => {
               ))
             )}
           </div>
+        )}
+
+        {activeTab === 'quizzes' && id && (
+          <QuizTab classId={id} />
         )}
 
         {activeTab === 'members' && (isAdmin || isTeacher) && (

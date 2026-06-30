@@ -10,6 +10,9 @@ import UserListPage from './pages/UserListPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 import AssignmentDetailPage from './pages/AssignmentDetailPage';
+import GradesPage from './pages/GradesPage';
+import CalendarPage from './pages/CalendarPage';
+import ReportsPage from './pages/ReportsPage';
 
 const AppRoutes = () => {
   return (
@@ -22,6 +25,9 @@ const AppRoutes = () => {
       <Route path="/assignments/:id" element={<ProtectedRoute><MainLayout><AssignmentDetailPage /></MainLayout></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
       <Route path="/profile/:id" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
+      <Route path="/grades" element={<ProtectedRoute><MainLayout><GradesPage /></MainLayout></ProtectedRoute>} />
+      <Route path="/calendar" element={<ProtectedRoute><MainLayout><CalendarPage /></MainLayout></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute roles={['Admin']}><MainLayout><AdminPanel /></MainLayout></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute roles={['Admin']}><MainLayout><UserListPage /></MainLayout></ProtectedRoute>} />
     </Routes>

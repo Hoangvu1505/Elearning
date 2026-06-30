@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api, { getAssetUrl } from '../services/api';
 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
+  const [searchParams] = useSearchParams();
   const { user: currentUser, refreshUser } = useAuth();
   const [profileUser, setProfileUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -17,6 +18,8 @@ const ProfilePage: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [imgError, setImgError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const mode = searchParams.get('mode') || 'view';
 
   useEffect(() => {
     setImgError(false);
@@ -105,23 +108,29 @@ const ProfilePage: React.FC = () => {
   if (loading) return <div className="text-center mt-12">Đang tải hồ sơ...</div>;
   if (!profileUser) return <div className="text-center mt-12">Không tìm thấy người dùng</div>;
 
+  const showEditMode = isOwnProfile && mode === 'edit';
+
   return (
     <div className="course-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
-      <h2 className="section-title mb-6">{isOwnProfile ? 'Hồ sơ cá nhân' : 'Thông tin thành viên'}</h2>
+      <h2 className="section-title mb-6">
+        {showEditMode ? '⚙️ Tùy chọn tài khoản' : isOwnProfile ? '👤 Hồ sơ cá nhân' : 'ℹ️ Thông tin thành viên'}
+      </h2>
       
       <div className="flex items-center gap-6 mb-8 pb-8" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div style={{ position: 'relative' }}>
           <img 
-            src={previewUrl || (!imgError && getAssetUrl(profileUser?.avatarUrl)) || 'https://ui-avatars.com/api/?background=304c7d&color=fff&name=' + (profileUser?.fullName || profileUser?.name || 'U')} 
+            src={previewUrl || (!imgError && getAssetUrl(profileUser?.avatarUrl)) || 'https://ui-avatars.com/api/?background=4f46e5&color=fff&name=' + (profileUser?.fullName || profileUser?.name || 'U')} 
             alt="Avatar" 
             style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }}
             onError={() => setImgError(true)}
           />
         </div>
         <div>
-          <h3 className="mb-2" style={{ color: 'var(--text-primary)' }}>{profileUser?.fullName}</h3>
-          <p className="text-secondary mb-4" style={{ fontSize: '0.875rem' }}>{profileUser?.role === 'Teacher' ? 'Giảng viên' : (profileUser?.role === 'Admin' ? 'Quản trị viên' : 'Sinh viên')} • {profileUser?.userCode}</p>
-          {isOwnProfile && (
+          <h3 className="mb-2" style={{ color: 'var(--text-primary)', fontSize: '1.25rem' }}>{profileUser?.fullName}</h3>
+          <p className="text-secondary mb-4" style={{ fontSize: '0.875rem' }}>
+            {profileUser?.role === 'Teacher' ? 'Giảng viên' : (profileUser?.role === 'Admin' ? 'Quản trị viên' : 'Sinh viên')} • MSSV/MSCB: {profileUser?.userCode}
+          </p>
+          {showEditMode && (
             <div className="flex gap-2">
               <input type="file" accept="image/*" onChange={handleAvatarChange} ref={fileInputRef} style={{ display: 'none' }} />
               <button type="button" onClick={() => fileInputRef.current?.click()} className="btn btn-outline">Chọn ảnh mới</button>
@@ -135,57 +144,74 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
 
-      <div className={isOwnProfile ? "grid-cols-2" : ""} style={{ gap: '2rem' }}>
-        <div>
-          <h3 className="mb-4" style={{ color: 'var(--text-primary)' }}>Thông tin chi tiết</h3>
-          <form onSubmit={handleUpdateProfile}>
-            <div className="form-group">
-              <label>Họ và tên</label>
-              <input 
-                type="text" 
-                value={fullName} 
-                onChange={e => setFullName(e.target.value)}
-                className="form-control"
-                required
-                disabled={!isOwnProfile}
-              />
-            </div>
-            <div className="form-group">
-              <label>Địa chỉ Email</label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={e => setEmail(e.target.value)}
-                className="form-control"
-                required
-                disabled={!isOwnProfile}
-              />
-            </div>
-            <div className="form-group">
-              <label>Ngày sinh</label>
-              <input 
-                type="date" 
-                value={dateOfBirth} 
-                onChange={e => setDateOfBirth(e.target.value)}
-                className="form-control"
-                disabled={!isOwnProfile}
-              />
-            </div>
-            {isOwnProfile && (
+      {showEditMode ? (
+        // EDIT MODE: Chỉnh sửa trang cá nhân & Đổi mật khẩu
+        <div className="grid-cols-2" style={{ gap: '2rem' }}>
+          <div>
+            <h3 className="mb-4" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>Cập nhật thông tin</h3>
+            <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
+              <div className="form-group">
+                <label>Họ và tên *</label>
+                <input 
+                  type="text" 
+                  value={fullName} 
+                  onChange={e => setFullName(e.target.value)}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Địa chỉ Email *</label>
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)}
+                  className="form-control"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Ngày sinh</label>
+                <input 
+                  type="date" 
+                  value={dateOfBirth} 
+                  onChange={e => setDateOfBirth(e.target.value)}
+                  className="form-control"
+                />
+              </div>
               <button type="submit" className="btn btn-primary mt-2" disabled={isUpdating}>
                 {isUpdating ? 'Đang lưu...' : 'Lưu thay đổi'}
               </button>
-            )}
-          </form>
-        </div>
+            </form>
+          </div>
 
-        {isOwnProfile && (
           <div>
-            <h3 className="mb-4" style={{ color: 'var(--text-primary)' }}>Đổi mật khẩu</h3>
+            <h3 className="mb-4" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>Đổi mật khẩu</h3>
             <ChangePasswordForm />
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        // VIEW MODE: Chỉ hiện thông tin (Hồ sơ)
+        <div style={{ maxWidth: '500px' }}>
+          <h3 className="mb-4" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>Thông tin chi tiết</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Họ và tên</span>
+              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>{profileUser?.fullName || '---'}</span>
+            </div>
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Địa chỉ Email</span>
+              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>{profileUser?.email || '---'}</span>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Ngày sinh</span>
+              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                {profileUser?.dateOfBirth ? new Date(profileUser.dateOfBirth).toLocaleDateString('vi-VN') : '---'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -194,6 +220,7 @@ const ChangePasswordForm: React.FC = () => {
   const [current, setCurrent] = useState('');
   const [newPass, setNewPass] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,17 +228,21 @@ const ChangePasswordForm: React.FC = () => {
       alert('Mật khẩu xác nhận không khớp');
       return;
     }
+    setLoading(true);
     try {
       await api.post('/profile/change-password', { currentPassword: current, newPassword: newPass });
       alert('Đổi mật khẩu thành công');
       setCurrent(''); setNewPass(''); setConfirm('');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      alert('Lỗi: ' + (error.response?.data?.message || 'Mật khẩu hiện tại không đúng'));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="form-group">
         <label>Mật khẩu hiện tại</label>
         <input type="password" value={current} onChange={e => setCurrent(e.target.value)} className="form-control" required />
@@ -224,7 +255,9 @@ const ChangePasswordForm: React.FC = () => {
         <label>Xác nhận mật khẩu mới</label>
         <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} className="form-control" required />
       </div>
-      <button type="submit" className="btn btn-outline mt-2">Cập nhật mật khẩu</button>
+      <button type="submit" className="btn btn-outline mt-2" disabled={loading}>
+        {loading ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
+      </button>
     </form>
   );
 };
