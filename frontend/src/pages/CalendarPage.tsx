@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface CalendarEvent {
@@ -143,7 +142,7 @@ const CalendarPage: React.FC = () => {
                   <button 
                     className="btn btn-outline" 
                     style={{ fontSize: '0.8rem', padding: '4px 12px' }}
-                    onClick={() => navigate(`/classes/${ev.Id}`)}
+                    onClick={() => navigate(`/classes/${ev.id}`)}
                   >
                     Vào lớp học ➡️
                   </button>
