@@ -383,5 +383,34 @@ namespace ElearningPlatform.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpDelete("assignments/{assignmentId}")]
+        public async Task<IActionResult> DeleteAssignment(int assignmentId)
+        {
+            var assignment = await _context.Assignments.FindAsync(assignmentId);
+            if (assignment == null) return NotFound(new { message = "Không tìm thấy bài tập" });
+
+            _context.Assignments.Remove(assignment);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã xóa bài tập thành công" });
+        }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpDelete("lectures/{lectureId}")]
+        public async Task<IActionResult> DeleteLecture(int lectureId)
+        {
+            var lecture = await _context.Lectures.FindAsync(lectureId);
+            if (lecture == null) return NotFound(new { message = "Không tìm thấy bài giảng" });
+
+            if (!string.IsNullOrEmpty(lecture.FilePath))
+            {
+                await _fileService.DeleteFile(lecture.FilePath);
+            }
+
+            _context.Lectures.Remove(lecture);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã xóa bài giảng thành công" });
+        }
     }
 }
