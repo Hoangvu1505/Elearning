@@ -44,7 +44,7 @@ const ClassDetailPage: React.FC = () => {
   // Form states
   const [announceTitle, setAnnounceTitle] = useState('');
   const [announceContent, setAnnounceContent] = useState('');
-  
+
   const [assignTitle, setAssignTitle] = useState('');
   const [assignDesc, setAssignDesc] = useState('');
   const [assignDueDate, setAssignDueDate] = useState('');
@@ -225,12 +225,12 @@ const ClassDetailPage: React.FC = () => {
           <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>
             Giảng viên: {' '}
             {classData?.teacher ? (
-              <button 
+              <button
                 onClick={() => navigate(`/profile/${classData.teacher.id}`)}
                 className="btn-link"
-                style={{ 
-                  background: 'none', border: 'none', padding: 0, color: 'var(--primary-color)', 
-                  textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' 
+                style={{
+                  background: 'none', border: 'none', padding: 0, color: 'var(--primary-color)',
+                  textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold'
                 }}
               >
                 {classData.teacher.fullName}
@@ -243,25 +243,25 @@ const ClassDetailPage: React.FC = () => {
       </div>
 
       <div className="tabs">
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'announcements' ? 'active' : ''}`}
           onClick={() => setActiveTab('announcements')}
         >
           Thông báo
         </button>
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'assignments' ? 'active' : ''}`}
           onClick={() => setActiveTab('assignments')}
         >
           Bài tập
         </button>
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'lectures' ? 'active' : ''}`}
           onClick={() => setActiveTab('lectures')}
         >
           Bài giảng
         </button>
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'quizzes' ? 'active' : ''}`}
           onClick={() => setActiveTab('quizzes')}
         >
@@ -314,8 +314,8 @@ const ClassDetailPage: React.FC = () => {
                       <h3 className="course-card-title mb-0" style={{ color: 'var(--primary-color)' }}>{a.title}</h3>
                       <div className="flex gap-2 items-center">
                         {canManage && (
-                          <button 
-                            className="btn" 
+                          <button
+                            className="btn"
                             style={{ padding: '2px 8px', fontSize: '0.75rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                             onClick={() => handleDeleteAssignment(a.id, a.title)}
                           >
@@ -330,8 +330,8 @@ const ClassDetailPage: React.FC = () => {
                       <small className="text-secondary" style={{ color: 'var(--danger-color)', fontWeight: 500 }}>
                         Hạn nộp: {new Date(a.dueDate).toLocaleDateString('vi-VN')}
                       </small>
-                      <button 
-                        className="btn btn-primary" 
+                      <button
+                        className="btn btn-primary"
                         onClick={() => navigate(`/assignments/${a.id}`)}
                       >
                         {isTeacher ? 'Xem chi tiết' : (a.hasSubmitted ? 'Xem bài nộp' : 'Nộp bài')}
@@ -360,8 +360,8 @@ const ClassDetailPage: React.FC = () => {
                       <div className="flex gap-2 items-center mb-2">
                         <h3 className="course-card-title mb-0" style={{ color: 'var(--primary-color)' }}>{l.title}</h3>
                         {canManage && (
-                          <button 
-                            className="btn" 
+                          <button
+                            className="btn"
                             style={{ padding: '2px 8px', fontSize: '0.75rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                             onClick={() => handleDeleteLecture(l.id, l.title)}
                           >
@@ -372,9 +372,9 @@ const ClassDetailPage: React.FC = () => {
                       <p className="course-card-meta mb-2" style={{ fontSize: '1rem', whiteSpace: 'pre-line' }}>{l.content}</p>
                     </div>
                     {l.filePath && (
-                      <a 
-                        href={getAssetUrl(l.filePath) || '#'} 
-                        target="_blank" 
+                      <a
+                        href={getAssetUrl(l.filePath) || '#'}
+                        target="_blank"
                         rel="noreferrer"
                         className="btn btn-outline"
                         style={{ padding: '4px 12px', fontSize: '0.85rem' }}
@@ -403,28 +403,28 @@ const ClassDetailPage: React.FC = () => {
             {isAdmin && (
               <div className="card mb-4" style={{ padding: '1rem' }}>
                 <form onSubmit={handleEnrollStudent} className="flex gap-3 items-end">
-                   <div style={{ flex: 1 }}>
-                     <label className="text-secondary text-sm block mb-1">Thêm học sinh vào lớp (chọn từ danh sách)</label>
-                     <select
-                       className="form-input"
-                       value={enrollStudentId}
-                       onChange={e => setEnrollStudentId(e.target.value)}
-                       required
-                     >
-                       <option value="">-- Chọn học sinh --</option>
-                       {allStudents
-                         .filter(s => !students.some(enrolled => String(enrolled.id) === String(s.id)))
-                         .map(s => (
-                           <option key={s.id} value={s.id}>
-                             {s.fullName} ({s.userCode || s.id})
-                           </option>
-                         ))
-                       }
-                     </select>
-                   </div>
-                   <button type="submit" className="btn btn-primary" disabled={enrollLoading}>
-                     {enrollLoading ? 'Đang thêm...' : '+ Thêm'}
-                   </button>
+                  <div style={{ flex: 1 }}>
+                    <label className="text-secondary text-sm block mb-1">Thêm học sinh vào lớp (chọn từ danh sách)</label>
+                    <select
+                      className="form-input"
+                      value={enrollStudentId}
+                      onChange={e => setEnrollStudentId(e.target.value)}
+                      required
+                    >
+                      <option value="">-- Chọn học sinh --</option>
+                      {allStudents
+                        .filter(s => !students.some(enrolled => String(enrolled.id) === String(s.id)))
+                        .map(s => (
+                          <option key={s.id} value={s.id}>
+                            {s.fullName} ({s.userCode || s.id})
+                          </option>
+                        ))
+                      }
+                    </select>
+                  </div>
+                  <button type="submit" className="btn btn-primary" disabled={enrollLoading}>
+                    {enrollLoading ? 'Đang thêm...' : '+ Thêm'}
+                  </button>
                 </form>
               </div>
             )}
