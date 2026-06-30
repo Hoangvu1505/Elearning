@@ -30,6 +30,7 @@ const ClassDetailPage: React.FC = () => {
   const [students, setStudents] = useState<EnrolledStudent[]>([]);
   const [enrollStudentId, setEnrollStudentId] = useState('');
   const [enrollLoading, setEnrollLoading] = useState(false);
+  const [allStudents, setAllStudents] = useState<any[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
 
   const isAssignedTeacher = String(user?.id) === String(classData?.teacher?.id);
@@ -88,29 +89,8 @@ const ClassDetailPage: React.FC = () => {
     if (!enrollStudentId) return;
     setEnrollLoading(true);
     try {
-      // Tìm kiếm học sinh trên frontend trước để lấy ID số thực tế
-      const usersRes = await api.get('/auth/users');
-      const allUsers = usersRes.data as any[];
-      
-      const foundUser = allUsers.find(u => 
-        (u.userCode && u.userCode.toLowerCase() === enrollStudentId.toLowerCase()) || 
-        String(u.id) === enrollStudentId
-      );
-
-      if (!foundUser) {
-        alert('Không tìm thấy người dùng với ID hoặc Mã số này!');
-        setEnrollLoading(false);
-        return;
-      }
-
-      if (foundUser.role !== 'Student') {
-        alert('Người dùng này không phải là học sinh!');
-        setEnrollLoading(false);
-        return;
-      }
-
       // Gửi ID số thực tế cho Backend
-      await api.post(`/classes/${id}/enroll`, { studentId: foundUser.id });
+      await api.post(`/classes/${id}/enroll`, { studentId: parseInt(enrollStudentId) });
       alert('Thêm học sinh thành công!');
       setEnrollStudentId('');
       fetchStudents();
@@ -149,10 +129,21 @@ const ClassDetailPage: React.FC = () => {
     }
   }, [classData, user]);
 
+  const fetchAllStudentsList = async () => {
+    try {
+      const usersRes = await api.get('/auth/users');
+      const studentsOnly = usersRes.data.filter((u: any) => u.role === 'Student');
+      setAllStudents(studentsOnly);
+    } catch (error) {
+      console.error('Failed to fetch all students list', error);
+    }
+  };
+
   // Tải danh sách học sinh khi chuyển sang tab Thành viên
   useEffect(() => {
     if (activeTab === 'members' && (isAdmin || isTeacher)) {
       fetchStudents();
+      fetchAllStudentsList();
     }
   }, [activeTab]);
 
@@ -368,20 +359,28 @@ const ClassDetailPage: React.FC = () => {
             {isAdmin && (
               <div className="card mb-4" style={{ padding: '1rem' }}>
                 <form onSubmit={handleEnrollStudent} className="flex gap-3 items-end">
-                  <div style={{ flex: 1 }}>
-                    <label className="text-secondary text-sm block mb-1">Thêm học sinh vào lớp (nhập ID)</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="ID hoặc Mã số (VD: HS01)"
-                      value={enrollStudentId}
-                      onChange={e => setEnrollStudentId(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary" disabled={enrollLoading}>
-                    {enrollLoading ? 'Đang thêm...' : '+ Thêm'}
-                  </button>
+                   <div style={{ flex: 1 }}>
+                     <label className="text-secondary text-sm block mb-1">Thêm học sinh vào lớp (chọn từ danh sách)</label>
+                     <select
+                       className="form-input"
+                       value={enrollStudentId}
+                       onChange={e => setEnrollStudentId(e.target.value)}
+                       required
+                     >
+                       <option value="">-- Chọn học sinh --</option>
+                       {allStudents
+                         .filter(s => !students.some(enrolled => String(enrolled.id) === String(s.id)))
+                         .map(s => (
+                           <option key={s.id} value={s.id}>
+                             {s.fullName} ({s.userCode || s.id})
+                           </option>
+                         ))
+                       }
+                     </select>
+                   </div>
+                   <button type="submit" className="btn btn-primary" disabled={enrollLoading}>
+                     {enrollLoading ? 'Đang thêm...' : '+ Thêm'}
+                   </button>
                 </form>
               </div>
             )}
