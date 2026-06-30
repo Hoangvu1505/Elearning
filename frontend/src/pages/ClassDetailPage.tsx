@@ -112,7 +112,7 @@ const ClassDetailPage: React.FC = () => {
     }
   };
 
-  const handleDeleteAssignment = async (assignmentId: number, title: string) => {
+  const handleDeleteAssignment = async (assignmentId: string | number, title: string) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa bài tập "${title}"? Tất cả bài nộp của học sinh cũng sẽ bị xóa.`)) return;
     try {
       await api.delete(`/classes/assignments/${assignmentId}`);
@@ -123,7 +123,7 @@ const ClassDetailPage: React.FC = () => {
     }
   };
 
-  const handleDeleteLecture = async (lectureId: number, title: string) => {
+  const handleDeleteLecture = async (lectureId: string | number, title: string) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa bài giảng "${title}"?`)) return;
     try {
       await api.delete(`/classes/lectures/${lectureId}`);
