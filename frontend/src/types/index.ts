@@ -30,6 +30,8 @@ export interface Assignment {
     description: string;
     dueDate: string;
     hasSubmitted?: boolean;
+    filePath?: string;
+    fileName?: string;
 }
 
 export interface Lecture {

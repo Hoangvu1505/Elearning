@@ -6,6 +6,7 @@ namespace ElearningPlatform.DTOs
         public string? Description { get; set; }
         public int ClassId { get; set; }
         public DateTime DueDate { get; set; }
+        public IFormFile? File { get; set; } = null;
     }
     
     public class AssignmentResponseDto
@@ -15,6 +16,8 @@ namespace ElearningPlatform.DTOs
         public string? Description { get; set; }
         public DateTime DueDate { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? FilePath { get; set; }
+        public string? FileName { get; set; }
         public UserResponseDto Teacher { get; set; } = null!;
         public bool HasSubmitted { get; set; } // cho student
     }

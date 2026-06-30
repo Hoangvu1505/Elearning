@@ -69,6 +69,7 @@ const ClassDetailPage: React.FC = () => {
   const [assignTitle, setAssignTitle] = useState('');
   const [assignDesc, setAssignDesc] = useState('');
   const [assignDueDate, setAssignDueDate] = useState('');
+  const [assignFile, setAssignFile] = useState<File | null>(null);
 
   const [lectureTitle, setLectureTitle] = useState('');
   const [lectureContent, setLectureContent] = useState('');
@@ -204,10 +205,20 @@ const ClassDetailPage: React.FC = () => {
 
   const handleCreateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append('title', assignTitle);
+    formData.append('description', assignDesc);
+    formData.append('dueDate', assignDueDate);
+    if (assignFile) {
+      formData.append('file', assignFile);
+    }
+
     try {
-      await api.post(`/classes/${id}/assignments`, { title: assignTitle, description: assignDesc, dueDate: assignDueDate });
+      await api.post(`/classes/${id}/assignments`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setShowAssignModal(false);
-      setAssignTitle(''); setAssignDesc(''); setAssignDueDate('');
+      setAssignTitle(''); setAssignDesc(''); setAssignDueDate(''); setAssignFile(null);
       fetchData(); // reload
     } catch (error: any) {
       alert('Lỗi: ' + (error.response?.data?.message || 'Không thể tạo bài tập'));
@@ -346,7 +357,20 @@ const ClassDetailPage: React.FC = () => {
                         {a.hasSubmitted && <span className="badge badge-success" style={{ height: 'fit-content' }}>Đã nộp</span>}
                       </div>
                     </div>
-                    <p className="course-card-meta mb-4" style={{ flexGrow: 1, whiteSpace: 'pre-line' }}>{a.description}</p>
+                    <p className="course-card-meta mb-2" style={{ flexGrow: 1, whiteSpace: 'pre-line' }}>{a.description}</p>
+                    {a.filePath && (
+                      <div className="mb-4">
+                        <a 
+                          href={getAssetUrl(a.filePath) || '#'} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="btn btn-outline"
+                          style={{ padding: '4px 10px', fontSize: '0.8rem', display: 'inline-block' }}
+                        >
+                          📂 Tài liệu bài tập: {a.fileName}
+                        </a>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between mt-auto pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
                       <small className="text-secondary" style={{ color: 'var(--danger-color)', fontWeight: 500 }}>
                         Hạn nộp: {new Date(a.dueDate).toLocaleDateString('vi-VN')}
@@ -542,6 +566,10 @@ const ClassDetailPage: React.FC = () => {
             <form onSubmit={handleCreateAssignment} className="flex flex-col gap-4 mt-4">
               <input type="text" placeholder="Tiêu đề bài tập" className="form-input" required value={assignTitle} onChange={e => setAssignTitle(e.target.value)} />
               <textarea placeholder="Mô tả và yêu cầu" className="form-input" rows={4} required value={assignDesc} onChange={e => setAssignDesc(e.target.value)} />
+              <div>
+                <label className="text-secondary text-sm mb-1 block">Tài liệu đính kèm (tùy chọn)</label>
+                <input type="file" className="form-input" onChange={e => setAssignFile(e.target.files?.[0] || null)} />
+              </div>
               <div>
                 <label className="text-secondary text-sm mb-1 block">Hạn nộp</label>
                 <input type="datetime-local" className="form-input" required value={assignDueDate} onChange={e => setAssignDueDate(e.target.value)} />

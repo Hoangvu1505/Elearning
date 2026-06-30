@@ -14,6 +14,8 @@ namespace ElearningPlatform.Models
         public User Teacher { get; set; } = null!;
         public DateTime DueDate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? FilePath { get; set; }
+        public string? FileName { get; set; }
         public ICollection<Submission> Submissions { get; set; } = new List<Submission>();
     }
 }

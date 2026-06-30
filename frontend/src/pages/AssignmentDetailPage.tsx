@@ -99,9 +99,22 @@ const AssignmentDetailPage: React.FC = () => {
 
                     <div className="mb-8">
                         <h3 className="text-xl font-semibold mb-3">Yêu cầu bài tập:</h3>
-                        <div className="p-4 bg-white/50 rounded-lg whitespace-pre-line border border-white/20">
+                        <div className="p-4 bg-white/50 rounded-lg whitespace-pre-line border border-white/20 mb-3">
                             {assignment.description}
                         </div>
+                        {assignment.filePath && (
+                            <div className="mt-2">
+                                <a 
+                                    href={getAssetUrl(assignment.filePath) ?? '#'} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="btn btn-outline flex items-center gap-2"
+                                    style={{ display: 'inline-flex', padding: '6px 12px' }}
+                                >
+                                    📁 Tải tệp đính kèm bài tập: {assignment.fileName}
+                                </a>
+                            </div>
+                        )}
                     </div>
 
                     <hr className="my-8 border-white/20" />

@@ -141,6 +141,8 @@ namespace ElearningPlatform.Controllers
                     Description = a.Description,
                     DueDate = DateTime.SpecifyKind(a.DueDate, DateTimeKind.Utc),
                     CreatedAt = DateTime.SpecifyKind(a.CreatedAt, DateTimeKind.Utc),
+                    FilePath = a.FilePath,
+                    FileName = a.FileName,
                     HasSubmitted = hasSubmitted
                 });
             }
@@ -197,7 +199,7 @@ namespace ElearningPlatform.Controllers
 
         [Authorize(Roles = "Admin,Teacher")]
         [HttpPost("{id}/assignments")]
-        public async Task<IActionResult> CreateAssignment(int id, [FromBody] CreateAssignmentDto dto)
+        public async Task<IActionResult> CreateAssignment(int id, [FromForm] CreateAssignmentDto dto)
         {
             var userId = GetUserId();
             var role = GetUserRole();
@@ -215,13 +217,24 @@ namespace ElearningPlatform.Controllers
             var classExists = await query.AnyAsync();
             if (!classExists) return Forbid();
 
+            string? filePath = null;
+            string? fileName = null;
+
+            if (dto.File != null)
+            {
+                filePath = await _fileService.SaveFileAsync(dto.File, "assignments");
+                fileName = dto.File.FileName;
+            }
+
             var assignment = new Assignment
             {
                 Title = dto.Title,
                 Description = dto.Description,
                 DueDate = dto.DueDate,
                 ClassId = id,
-                TeacherId = userId
+                TeacherId = userId,
+                FilePath = filePath,
+                FileName = fileName
             };
             _context.Assignments.Add(assignment);
             await _context.SaveChangesAsync();
@@ -390,6 +403,11 @@ namespace ElearningPlatform.Controllers
         {
             var assignment = await _context.Assignments.FindAsync(assignmentId);
             if (assignment == null) return NotFound(new { message = "Không tìm thấy bài tập" });
+
+            if (!string.IsNullOrEmpty(assignment.FilePath))
+            {
+                await _fileService.DeleteFile(assignment.FilePath);
+            }
 
             _context.Assignments.Remove(assignment);
             await _context.SaveChangesAsync();
