@@ -84,7 +84,8 @@ namespace ElearningPlatform.Controllers
             Email = user.Email,
             DateOfBirth = user.DateOfBirth,
             AvatarUrl = user.AvatarUrl,
-            Role = user.Role
+            Role = user.Role,
+            LastLoginAt = user.LastLoginAt != null ? DateTime.SpecifyKind(user.LastLoginAt.Value, DateTimeKind.Utc) : null
         };
     }
 }

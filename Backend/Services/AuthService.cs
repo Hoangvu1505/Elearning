@@ -57,6 +57,9 @@ namespace ElearningPlatform.Services
             if (!VerifyPasswordHash(dto.Password, user.PasswordHash, user.PasswordSalt))
                 throw new Exception("Email hoặc mật khẩu không đúng");
                 
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+                
             return CreateToken(user);
         }
         
@@ -147,7 +150,8 @@ namespace ElearningPlatform.Services
             DateOfBirth = user.DateOfBirth,
             AvatarUrl = user.AvatarUrl,
             Role = user.Role,
-            UserCode = user.UserCode
+            UserCode = user.UserCode,
+            LastLoginAt = user.LastLoginAt != null ? DateTime.SpecifyKind(user.LastLoginAt.Value, DateTimeKind.Utc) : null
         };
         
         private void CreatePasswordHash(string password, out byte[] hash, out byte[] salt)

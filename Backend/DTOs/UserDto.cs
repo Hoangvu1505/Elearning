@@ -24,6 +24,7 @@ namespace ElearningPlatform.DTOs
         public string? AvatarUrl { get; set; }
         public string Role { get; set; } = string.Empty;
         public string? UserCode { get; set; }
+        public DateTime? LastLoginAt { get; set; }
     }
     
     public class UpdateProfileDto

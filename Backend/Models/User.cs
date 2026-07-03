@@ -20,6 +20,7 @@ namespace ElearningPlatform.Models
         public string Role { get; set; } = "Student"; // Admin, Teacher, Student
         public string UserCode { get; set; } = string.Empty; // HS01, GV01...
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? LastLoginAt { get; set; }
         
         // Navigation properties
         public ICollection<ClassEnrollment> Enrollments { get; set; } = new List<ClassEnrollment>();
