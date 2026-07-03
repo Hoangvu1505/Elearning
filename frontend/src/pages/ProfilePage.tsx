@@ -203,10 +203,20 @@ const ProfilePage: React.FC = () => {
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Địa chỉ Email</span>
               <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>{profileUser?.email || '---'}</span>
             </div>
-            <div>
+            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Ngày sinh</span>
               <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>
                 {profileUser?.dateOfBirth ? new Date(profileUser.dateOfBirth).toLocaleDateString('vi-VN') : '---'}
+              </span>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Lần đăng nhập cuối</span>
+              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                {profileUser?.lastLoginAt ? (
+                  new Date(profileUser.lastLoginAt).toLocaleString('vi-VN')
+                ) : (
+                  'Chưa ghi nhận đăng nhập'
+                )}
               </span>
             </div>
           </div>

@@ -65,9 +65,9 @@ const Dashboard: React.FC = () => {
             </span>
           </div>
           <p className="text-secondary mb-6" style={{ fontSize: '0.95rem' }}>Vui lòng kiểm tra và nộp bài tập đúng thời hạn.</p>
-          <button className="btn btn-outline w-full text-center">Xem bài tập</button>
+          <button onClick={() => navigate('/calendar')} className="btn btn-outline w-full text-center">Xem bài tập</button>
         </div>
-
+ 
         {/* CARD 3 */}
         <div className="course-card">
           <div className="flex items-center justify-between mb-4">
@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
             </span>
           </div>
           <p className="text-secondary mb-6" style={{ fontSize: '0.95rem' }}>Có thông báo mới từ giảng viên của bạn.</p>
-          <button className="btn btn-outline w-full text-center">Xem thông báo</button>
+          <button onClick={() => navigate('/classes')} className="btn btn-outline w-full text-center">Xem thông báo</button>
         </div>
       </div>
     </div>

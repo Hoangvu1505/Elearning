@@ -19,7 +19,10 @@ const LoginForm: React.FC = () => {
             navigate('/dashboard');
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.');
+            const errorMessage = err.response?.data?.message || 
+                                 (typeof err.response?.data === 'string' ? err.response.data : null) || 
+                                 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
