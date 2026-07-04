@@ -35,6 +35,35 @@ const getYouTubeEmbedUrl = (text?: string): string | null => {
   return null;
 };
 
+const getRemainingTimeText = (dueDateStr: string): string => {
+  const diffMs = new Date(dueDateStr).getTime() - new Date().getTime();
+  const isOverdue = diffMs < 0;
+  const absDiff = Math.abs(diffMs);
+
+  const diffSecs = Math.floor(absDiff / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (isOverdue) {
+    if (diffDays > 0) return `Đã quá hạn ${diffDays} ngày`;
+    if (diffHours > 0) return `Đã quá hạn ${diffHours} giờ`;
+    if (diffMins > 0) return `Đã quá hạn ${diffMins} phút`;
+    return 'Đã quá hạn';
+  } else {
+    if (diffDays > 0) {
+      const remainingHours = diffHours % 24;
+      return `Còn ${diffDays} ngày ${remainingHours} giờ`;
+    }
+    if (diffHours > 0) {
+      const remainingMins = diffMins % 60;
+      return `Còn ${diffHours} giờ ${remainingMins} phút`;
+    }
+    if (diffMins > 0) return `Còn ${diffMins} phút`;
+    return 'Hết thời gian nộp';
+  }
+};
+
 const ClassDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -407,9 +436,19 @@ const ClassDetailPage: React.FC = () => {
                       </div>
                     )}
                     <div className="flex items-center justify-between mt-auto pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
-                      <small className="text-secondary" style={{ color: 'var(--danger-color)', fontWeight: 500 }}>
-                        Hạn nộp: {new Date(a.dueDate).toLocaleDateString('vi-VN')}
-                      </small>
+                      <div className="flex flex-col">
+                        <small className="text-secondary" style={{ color: 'var(--danger-color)', fontWeight: 500 }}>
+                          Hạn nộp: {new Date(a.dueDate).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}
+                        </small>
+                        <small style={{ 
+                          fontSize: '0.8rem', 
+                          fontWeight: 'bold', 
+                          color: new Date(a.dueDate).getTime() - new Date().getTime() < 0 ? '#dc3545' : '#10b981',
+                          marginTop: '2px'
+                        }}>
+                          ⏱️ {getRemainingTimeText(a.dueDate)}
+                        </small>
+                      </div>
                       <button
                         className="btn btn-primary"
                         onClick={() => navigate(`/assignments/${a.id}`)}

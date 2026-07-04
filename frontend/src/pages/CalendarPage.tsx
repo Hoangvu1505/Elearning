@@ -11,6 +11,35 @@ interface CalendarEvent {
   classId?: number;
 }
 
+const getRemainingTimeText = (dueDateStr: string): string => {
+  const diffMs = new Date(dueDateStr).getTime() - new Date().getTime();
+  const isOverdue = diffMs < 0;
+  const absDiff = Math.abs(diffMs);
+
+  const diffSecs = Math.floor(absDiff / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (isOverdue) {
+    if (diffDays > 0) return `Đã quá hạn ${diffDays} ngày`;
+    if (diffHours > 0) return `Đã quá hạn ${diffHours} giờ`;
+    if (diffMins > 0) return `Đã quá hạn ${diffMins} phút`;
+    return 'Đã quá hạn';
+  } else {
+    if (diffDays > 0) {
+      const remainingHours = diffHours % 24;
+      return `Còn ${diffDays} ngày ${remainingHours} giờ`;
+    }
+    if (diffHours > 0) {
+      const remainingMins = diffMins % 60;
+      return `Còn ${diffHours} giờ ${remainingMins} phút`;
+    }
+    if (diffMins > 0) return `Còn ${diffMins} phút`;
+    return 'Hết thời gian nộp';
+  }
+};
+
 const CalendarPage: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,10 +164,18 @@ const CalendarPage: React.FC = () => {
                       fontSize: '0.9rem', 
                       fontWeight: 600, 
                       color: isOverdue ? 'var(--danger-color)' : 'var(--text-primary)',
-                      marginBottom: '0.5rem'
+                      marginBottom: '0.25rem'
                     }}
                   >
-                    ⏰ Hạn chót: {eventDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                    ⏰ Hạn chót: {eventDate.toLocaleDateString('vi-VN')} {eventDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span style={{ 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    color: isOverdue ? '#dc3545' : '#10b981',
+                    marginBottom: '0.5rem'
+                  }}>
+                    ⏱️ {getRemainingTimeText(ev.date)}
                   </span>
                   <button 
                     className="btn btn-outline" 

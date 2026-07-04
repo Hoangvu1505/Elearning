@@ -4,6 +4,35 @@ import api, { getAssetUrl } from '../services/api';
 import { Assignment, Submission } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
+const getRemainingTimeText = (dueDateStr: string): string => {
+  const diffMs = new Date(dueDateStr).getTime() - new Date().getTime();
+  const isOverdue = diffMs < 0;
+  const absDiff = Math.abs(diffMs);
+
+  const diffSecs = Math.floor(absDiff / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (isOverdue) {
+    if (diffDays > 0) return `Đã quá hạn ${diffDays} ngày`;
+    if (diffHours > 0) return `Đã quá hạn ${diffHours} giờ`;
+    if (diffMins > 0) return `Đã quá hạn ${diffMins} phút`;
+    return 'Đã quá hạn';
+  } else {
+    if (diffDays > 0) {
+      const remainingHours = diffHours % 24;
+      return `Còn ${diffDays} ngày ${remainingHours} giờ`;
+    }
+    if (diffHours > 0) {
+      const remainingMins = diffMins % 60;
+      return `Còn ${diffHours} giờ ${remainingMins} phút`;
+    }
+    if (diffMins > 0) return `Còn ${diffMins} phút`;
+    return 'Hết thời gian nộp';
+  }
+};
+
 const AssignmentDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -121,7 +150,16 @@ const AssignmentDetailPage: React.FC = () => {
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h1 className="text-3xl font-bold mb-2">{assignment.title}</h1>
-                            <p className="text-secondary">Hạn nộp: {new Date(assignment.dueDate).toLocaleString('vi-VN')}</p>
+                            <p className="text-secondary">
+                                Hạn nộp: {new Date(assignment.dueDate).toLocaleString('vi-VN')}
+                                <span style={{ 
+                                    marginLeft: '10px', 
+                                    fontWeight: 'bold', 
+                                    color: new Date(assignment.dueDate).getTime() - new Date().getTime() < 0 ? '#dc3545' : '#10b981' 
+                                }}>
+                                    ⏱️ ({getRemainingTimeText(assignment.dueDate)})
+                                </span>
+                            </p>
                         </div>
                         {assignment.hasSubmitted && <span className="badge badge-success">Đã nộp</span>}
                     </div>
