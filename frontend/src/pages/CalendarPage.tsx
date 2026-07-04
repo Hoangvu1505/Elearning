@@ -8,6 +8,7 @@ interface CalendarEvent {
   date: string;
   type: string;
   className: string;
+  classId?: number;
 }
 
 const CalendarPage: React.FC = () => {
@@ -142,7 +143,7 @@ const CalendarPage: React.FC = () => {
                   <button 
                     className="btn btn-outline" 
                     style={{ fontSize: '0.8rem', padding: '4px 12px' }}
-                    onClick={() => navigate(`/classes/${ev.id}`)}
+                    onClick={() => navigate(`/classes/${ev.classId || ev.id}`)}
                   >
                     Vào lớp học ➡️
                   </button>

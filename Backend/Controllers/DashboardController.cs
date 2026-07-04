@@ -269,6 +269,7 @@ namespace ElearningPlatform.Controllers
             public DateTime Date { get; set; }
             public string Type { get; set; } = "";
             public string ClassName { get; set; } = "";
+            public int ClassId { get; set; }
         }
 
         [HttpGet("calendar")]
@@ -293,7 +294,8 @@ namespace ElearningPlatform.Controllers
                         Title = q.Title,
                         Date = q.CreatedAt.AddDays(7), // Assume a default due date of 7 days after creation
                         Type = "Trắc nghiệm",
-                        ClassName = q.Class.Name
+                        ClassName = q.Class.Name,
+                        ClassId = q.ClassId
                     })
                     .ToListAsync();
 
@@ -305,7 +307,8 @@ namespace ElearningPlatform.Controllers
                         Title = a.Title,
                         Date = a.DueDate,
                         Type = "Bài tập",
-                        ClassName = a.Class.Name
+                        ClassName = a.Class.Name,
+                        ClassId = a.ClassId
                     })
                     .ToListAsync();
 
@@ -327,7 +330,8 @@ namespace ElearningPlatform.Controllers
                         Title = q.Title,
                         Date = q.CreatedAt.AddDays(7),
                         Type = "Trắc nghiệm",
-                        ClassName = q.Class.Name
+                        ClassName = q.Class.Name,
+                        ClassId = q.ClassId
                     })
                     .ToListAsync();
 
@@ -339,7 +343,8 @@ namespace ElearningPlatform.Controllers
                         Title = a.Title,
                         Date = a.DueDate,
                         Type = "Bài tập",
-                        ClassName = a.Class.Name
+                        ClassName = a.Class.Name,
+                        ClassId = a.ClassId
                     })
                     .ToListAsync();
 

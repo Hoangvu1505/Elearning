@@ -13,6 +13,7 @@ import AssignmentDetailPage from './pages/AssignmentDetailPage';
 import GradesPage from './pages/GradesPage';
 import CalendarPage from './pages/CalendarPage';
 import ReportsPage from './pages/ReportsPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 const AppRoutes = () => {
   return (
@@ -28,6 +29,7 @@ const AppRoutes = () => {
       <Route path="/grades" element={<ProtectedRoute><MainLayout><GradesPage /></MainLayout></ProtectedRoute>} />
       <Route path="/calendar" element={<ProtectedRoute><MainLayout><CalendarPage /></MainLayout></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><MainLayout><ReportsPage /></MainLayout></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><MainLayout><NotificationsPage /></MainLayout></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute roles={['Admin']}><MainLayout><AdminPanel /></MainLayout></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute roles={['Admin']}><MainLayout><UserListPage /></MainLayout></ProtectedRoute>} />
     </Routes>

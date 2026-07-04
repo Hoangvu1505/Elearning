@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
             </span>
           </div>
           <p className="text-secondary mb-6" style={{ fontSize: '0.95rem' }}>Có thông báo mới từ giảng viên của bạn.</p>
-          <button onClick={() => navigate('/classes')} className="btn btn-outline w-full text-center">Xem thông báo</button>
+          <button onClick={() => navigate('/notifications')} className="btn btn-outline w-full text-center">Xem thông báo</button>
         </div>
       </div>
     </div>
