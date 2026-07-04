@@ -15,6 +15,11 @@ const AssignmentDetailPage: React.FC = () => {
     const [submitting, setSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+    const [gradingSub, setGradingSub] = useState<Submission | null>(null);
+    const [gradeVal, setGradeVal] = useState<string>('');
+    const [feedbackVal, setFeedbackVal] = useState<string>('');
+    const [gradingLoading, setGradingLoading] = useState(false);
+
     const loadData = async (showLoading = true) => {
         if (showLoading) setLoading(true);
         try {
@@ -78,6 +83,30 @@ const AssignmentDetailPage: React.FC = () => {
         }
     };
 
+    const handleSaveGrade = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!gradingSub) return;
+        const parsedGrade = parseFloat(gradeVal);
+        if (isNaN(parsedGrade) || parsedGrade < 0 || parsedGrade > 10) {
+            alert('Điểm số phải là số từ 0 đến 10');
+            return;
+        }
+        setGradingLoading(true);
+        try {
+            await api.post(`/submissions/${gradingSub.id}/grade`, {
+                grade: parsedGrade,
+                feedback: feedbackVal
+            });
+            alert('Chấm điểm thành công!');
+            setGradingSub(null);
+            loadData(false);
+        } catch (error: any) {
+            alert('Lỗi: ' + (error.response?.data?.message || 'Không thể lưu điểm'));
+        } finally {
+            setGradingLoading(false);
+        }
+    };
+
     if (loading) return <div className="text-center mt-12">Đang tải...</div>;
     if (!assignment) return <div className="text-center mt-12">Không tìm thấy bài tập.</div>;
 
@@ -124,12 +153,34 @@ const AssignmentDetailPage: React.FC = () => {
                             <h3 className="text-xl font-semibold mb-4">
                                 {mySubmission ? "Bài nộp của bạn" : "Nộp bài"}
                             </h3>
-                            
-                            {mySubmission && (
+                                                        {mySubmission && (
                                 <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex justify-between items-center">
                                     <div>
                                         <p className="font-medium">File đã nộp: {mySubmission.fileName}</p>
-                                        <p className="text-sm text-secondary">Thời gian: {new Date(mySubmission.submittedAt).toLocaleString('vi-VN')}</p>
+                                        <p className="text-sm text-secondary">
+                                            Thời gian: {' '}
+                                            <span style={{ 
+                                                color: new Date(mySubmission.submittedAt) > new Date(assignment.dueDate) ? '#dc3545' : 'inherit', 
+                                                fontWeight: new Date(mySubmission.submittedAt) > new Date(assignment.dueDate) ? 'bold' : 'normal' 
+                                            }}>
+                                                {new Date(mySubmission.submittedAt).toLocaleString('vi-VN')}
+                                                {new Date(mySubmission.submittedAt) > new Date(assignment.dueDate) && (
+                                                    <span style={{ marginLeft: '6px', fontSize: '0.75rem', backgroundColor: '#f8d7da', color: '#721c24', padding: '2px 6px', borderRadius: '4px' }}>Nộp trễ</span>
+                                                )}
+                                            </span>
+                                        </p>
+                                        {mySubmission.grade !== null && mySubmission.grade !== undefined && (
+                                            <div className="mt-3 p-3 bg-white/40 rounded-lg border border-green-500/20">
+                                                <p style={{ margin: 0, fontWeight: 'bold', color: 'var(--primary-color)' }}>
+                                                    💯 Điểm số: <span style={{ fontSize: '1.2rem', color: '#10b981' }}>{mySubmission.grade}</span> / 10
+                                                </p>
+                                                {mySubmission.feedback && (
+                                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                                                        💬 Nhận xét: {mySubmission.feedback}
+                                                     </p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                     <a 
                                         href={getAssetUrl(mySubmission.filePath) ?? '#'} 
@@ -179,26 +230,61 @@ const AssignmentDetailPage: React.FC = () => {
                                                 <th className="py-3 px-4">Học sinh</th>
                                                 <th className="py-3 px-4">Thời gian nộp</th>
                                                 <th className="py-3 px-4">File bài làm</th>
+                                                <th className="py-3 px-4">Điểm số</th>
+                                                <th className="py-3 px-4">Nhận xét</th>
+                                                <th className="py-3 px-4 text-center">Hành động</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {allSubmissions.map(sub => (
-                                                <tr key={sub.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                                                    <td className="py-3 px-4">{sub.student?.userCode || sub.student?.id}</td>
-                                                    <td className="py-3 px-4 font-medium">{sub.student?.fullName}</td>
-                                                    <td className="py-3 px-4 text-sm text-secondary">{new Date(sub.submittedAt).toLocaleString('vi-VN')}</td>
-                                                    <td className="py-3 px-4">
-                                                        <a 
-                                                            href={getAssetUrl(sub.filePath) ?? '#'} 
-                                                            target="_blank" 
-                                                            rel="noreferrer"
-                                                            className="text-primary hover:underline font-medium"
-                                                        >
-                                                            {sub.fileName}
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {allSubmissions.map(sub => {
+                                                const isLate = new Date(sub.submittedAt) > new Date(assignment.dueDate);
+                                                return (
+                                                    <tr key={sub.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                                                        <td className="py-3 px-4">{sub.student?.userCode || sub.student?.id}</td>
+                                                        <td className="py-3 px-4 font-medium">{sub.student?.fullName}</td>
+                                                        <td className="py-3 px-4 text-sm text-secondary">
+                                                            <span style={{ 
+                                                                color: isLate ? '#dc3545' : 'inherit', 
+                                                                fontWeight: isLate ? 'bold' : 'normal' 
+                                                            }}>
+                                                                {new Date(sub.submittedAt).toLocaleString('vi-VN')}
+                                                                {isLate && (
+                                                                    <span style={{ marginLeft: '6px', fontSize: '0.75rem', backgroundColor: '#f8d7da', color: '#721c24', padding: '2px 6px', borderRadius: '4px' }}>Nộp trễ</span>
+                                                                )}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-4">
+                                                            <a 
+                                                                href={getAssetUrl(sub.filePath) ?? '#'} 
+                                                                target="_blank" 
+                                                                rel="noreferrer"
+                                                                className="text-primary hover:underline font-medium"
+                                                            >
+                                                                {sub.fileName}
+                                                            </a>
+                                                        </td>
+                                                        <td className="py-3 px-4 font-bold" style={{ color: sub.grade !== null ? '#10b981' : 'var(--text-secondary)' }}>
+                                                            {sub.grade !== null && sub.grade !== undefined ? `${sub.grade} / 10` : '---'}
+                                                        </td>
+                                                        <td className="py-3 px-4 text-sm text-secondary" style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                            {sub.feedback || '---'}
+                                                        </td>
+                                                        <td className="py-3 px-4 text-center">
+                                                            <button 
+                                                                className="btn btn-primary"
+                                                                style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                                                                onClick={() => {
+                                                                    setGradingSub(sub);
+                                                                    setGradeVal(sub.grade !== null && sub.grade !== undefined ? String(sub.grade) : '');
+                                                                    setFeedbackVal(sub.feedback || '');
+                                                                }}
+                                                            >
+                                                                📝 Chấm điểm
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
@@ -207,6 +293,75 @@ const AssignmentDetailPage: React.FC = () => {
                     )}
                 </div>
             </main>
+
+            {/* Modal Chấm điểm */}
+            {gradingSub && (
+                <div 
+                    className="modal-overlay" 
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000
+                    }}
+                >
+                    <div 
+                        className="modal-content" 
+                        style={{
+                            backgroundColor: 'white',
+                            padding: '2rem',
+                            borderRadius: '12px',
+                            width: '90%',
+                            maxWidth: '450px',
+                            boxShadow: 'var(--shadow-lg)',
+                            color: 'var(--text-primary)'
+                        }}
+                    >
+                        <h3 className="mb-2" style={{ color: 'var(--primary-color)' }}>📝 Chấm bài nộp</h3>
+                        <p className="text-secondary text-sm mb-4">
+                            Học sinh: <strong>{gradingSub.student?.fullName}</strong> ({gradingSub.student?.userCode})
+                        </p>
+                        <form onSubmit={handleSaveGrade} className="flex flex-col gap-4">
+                            <div>
+                                <label className="text-secondary text-sm mb-1 block">Điểm số (Thang điểm 10)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.1" 
+                                    min="0" 
+                                    max="10" 
+                                    required 
+                                    className="form-input" 
+                                    placeholder="Ví dụ: 8.5"
+                                    value={gradeVal}
+                                    onChange={e => setGradeVal(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-secondary text-sm mb-1 block">Nhận xét của Giáo viên</label>
+                                <textarea 
+                                    className="form-input" 
+                                    rows={4} 
+                                    placeholder="Nhập nhận xét hoặc feedback..."
+                                    value={feedbackVal}
+                                    onChange={e => setFeedbackVal(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex gap-2 justify-end mt-2">
+                                <button type="button" className="btn btn-outline" onClick={() => setGradingSub(null)}>Hủy</button>
+                                <button type="submit" className="btn btn-primary" disabled={gradingLoading}>
+                                    {gradingLoading ? 'Đang lưu...' : 'Lưu điểm số'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

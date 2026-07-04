@@ -19,4 +19,10 @@ namespace ElearningPlatform.DTOs
         public string? Feedback { get; set; }
         public UserResponseDto? Student { get; set; }
     }
+
+    public class GradeSubmissionDto
+    {
+        public double Grade { get; set; }
+        public string? Feedback { get; set; }
+    }
 }

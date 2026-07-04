@@ -119,13 +119,28 @@ namespace ElearningPlatform.Controllers
             return Ok(MapToDto(submission));
         }
 
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpPost("{id}/grade")]
+        public async Task<IActionResult> GradeSubmission(int id, [FromBody] GradeSubmissionDto dto)
+        {
+            var submission = await _context.Submissions.FindAsync(id);
+            if (submission == null) return NotFound(new { message = "Không tìm thấy bài nộp" });
+
+            submission.Grade = dto.Grade;
+            submission.Feedback = dto.Feedback;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(MapToDto(submission));
+        }
+
         private static SubmissionResponseDto MapToDto(Submission s) => new()
         {
             Id = s.Id,
             FilePath = s.FilePath ?? "",
             FileName = s.FileName ?? "",
             FileSize = s.FileSize ?? 0,
-            SubmittedAt = s.SubmittedAt,
+            SubmittedAt = DateTime.SpecifyKind(s.SubmittedAt, DateTimeKind.Utc),
             Grade = s.Grade,
             Feedback = s.Feedback,
             Student = s.Student != null ? new UserResponseDto
