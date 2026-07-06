@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { Class, Announcement, Assignment, Lecture } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -595,7 +595,11 @@ const ClassDetailPage: React.FC = () => {
                     {students.map((s, index) => (
                       <tr key={s.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: index % 2 === 0 ? 'white' : 'var(--bg-secondary)' }}>
                         <td style={{ padding: '0.75rem 1rem' }}>{s.userCode || s.id}</td>
-                        <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>{s.fullName}</td>
+                        <td style={{ padding: '0.75rem 1rem', fontWeight: 500 }}>
+                          <Link to={`/profile/${s.id}`} style={{ color: 'var(--primary-color)', textDecoration: 'underline' }}>
+                            {s.fullName}
+                          </Link>
+                        </td>
                         <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>{s.email}</td>
                         <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)' }}>{new Date(s.enrolledAt).toLocaleDateString('vi-VN')}</td>
                         {isAdmin && (

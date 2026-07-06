@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api, { getAssetUrl } from '../services/api';
 
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user: currentUser, refreshUser } = useAuth();
   const [profileUser, setProfileUser] = useState<any>(null);
+  const [userClasses, setUserClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [fullName, setFullName] = useState('');
@@ -31,14 +33,21 @@ const ProfilePage: React.FC = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
+        let userDetails = null;
         if (isOwnProfile) {
-          setProfileUser(currentUser);
+          userDetails = currentUser;
         } else {
           const res = await api.get(`/auth/users/${id}`);
-          setProfileUser(res.data);
+          userDetails = res.data;
+        }
+        setProfileUser(userDetails);
+
+        if (userDetails) {
+          const classesRes = await api.get(`/classes/user/${userDetails.id}`);
+          setUserClasses(classesRes.data);
         }
       } catch (error) {
-        console.error('Failed to fetch profile', error);
+        console.error('Failed to fetch profile/classes', error);
       } finally {
         setLoading(false);
       }
@@ -192,33 +201,72 @@ const ProfilePage: React.FC = () => {
         </div>
       ) : (
         // VIEW MODE: Chỉ hiện thông tin (Hồ sơ)
-        <div style={{ maxWidth: '500px' }}>
-          <h3 className="mb-4" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>Thông tin chi tiết</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Họ và tên</span>
-              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>{profileUser?.fullName || '---'}</span>
+        <div className="grid-cols-2" style={{ gap: '2rem' }}>
+          <div>
+            <h3 className="mb-4" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>Thông tin chi tiết</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Họ và tên</span>
+                <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>{profileUser?.fullName || '---'}</span>
+              </div>
+              <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Địa chỉ Email</span>
+                <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>{profileUser?.email || '---'}</span>
+              </div>
+              <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Ngày sinh</span>
+                <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                  {profileUser?.dateOfBirth ? new Date(profileUser.dateOfBirth).toLocaleDateString('vi-VN') : '---'}
+                </span>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Lần đăng nhập cuối</span>
+                <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                  {profileUser?.lastLoginAt ? (
+                    new Date(profileUser.lastLoginAt).toLocaleString('vi-VN')
+                  ) : (
+                    'Chưa ghi nhận đăng nhập'
+                  )}
+                </span>
+              </div>
             </div>
-            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Địa chỉ Email</span>
-              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>{profileUser?.email || '---'}</span>
-            </div>
-            <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Ngày sinh</span>
-              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-                {profileUser?.dateOfBirth ? new Date(profileUser.dateOfBirth).toLocaleDateString('vi-VN') : '---'}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', fontWeight: 600 }}>Lần đăng nhập cuối</span>
-              <span style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-                {profileUser?.lastLoginAt ? (
-                  new Date(profileUser.lastLoginAt).toLocaleString('vi-VN')
-                ) : (
-                  'Chưa ghi nhận đăng nhập'
-                )}
-              </span>
-            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-4" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>
+              {profileUser?.role === 'Teacher' ? '🏫 Các khóa học đang giảng dạy' : '🏫 Các khóa học đã tham gia'} ({userClasses.length})
+            </h3>
+            {userClasses.length === 0 ? (
+              <p className="text-secondary" style={{ fontSize: '0.95rem' }}>Chưa tham gia khóa học nào.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px' }}>
+                {userClasses.map(c => (
+                  <div 
+                    key={c.id} 
+                    className="card" 
+                    style={{ 
+                      padding: '1rem', 
+                      backgroundColor: 'var(--bg-secondary)', 
+                      borderRadius: '8px', 
+                      border: '1px solid var(--border-color)',
+                      boxShadow: 'var(--shadow-sm)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => navigate(`/classes/${c.id}`)}
+                  >
+                    <h4 style={{ margin: '0 0 4px 0', color: 'var(--primary-color)', fontSize: '0.95rem', fontWeight: 600 }}>{c.name}</h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {c.description}
+                    </p>
+                    {profileUser?.role === 'Student' && c.teacher && (
+                      <small style={{ display: 'block', marginTop: '6px', color: 'var(--text-secondary)' }}>
+                        👤 GV: {c.teacher.fullName}
+                      </small>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

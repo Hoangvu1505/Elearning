@@ -67,6 +67,50 @@ namespace ElearningPlatform.Controllers
             return Ok(result);
         }
 
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetClassesForUser(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound(new { message = "Không tìm thấy người dùng" });
+
+            var query = _context.Classes.Include(c => c.Teacher).AsQueryable();
+
+            if (user.Role == "Student")
+            {
+                var enrolledClassIds = await _context.ClassEnrollments
+                    .Where(ce => ce.StudentId == userId)
+                    .Select(ce => ce.ClassId)
+                    .ToListAsync();
+                    
+                query = query.Where(c => enrolledClassIds.Contains(c.Id));
+            }
+            else if (user.Role == "Teacher")
+            {
+                query = query.Where(c => c.TeacherId == userId);
+            }
+            else
+            {
+                return Ok(new List<ClassResponseDto>());
+            }
+
+            var classes = await query.ToListAsync();
+            var result = classes.Select(c => new ClassResponseDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                Teacher = c.Teacher != null ? new UserResponseDto 
+                { 
+                    Id = c.Teacher.Id, 
+                    FullName = c.Teacher.FullName, 
+                    Role = c.Teacher.Role 
+                } : null!,
+                StudentCount = _context.ClassEnrollments.Count(ce => ce.ClassId == c.Id)
+            }).ToList();
+
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetClass(int id)
         {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api, { getAssetUrl } from '../services/api';
 import { Assignment, Submission } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -279,7 +279,11 @@ const AssignmentDetailPage: React.FC = () => {
                                                 return (
                                                     <tr key={sub.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                                                         <td className="py-3 px-4">{sub.student?.userCode || sub.student?.id}</td>
-                                                        <td className="py-3 px-4 font-medium">{sub.student?.fullName}</td>
+                                                        <td className="py-3 px-4 font-medium">
+                                                            <Link to={`/profile/${sub.student?.id}`} className="text-primary hover:underline">
+                                                                {sub.student?.fullName}
+                                                            </Link>
+                                                        </td>
                                                         <td className="py-3 px-4 text-sm text-secondary">
                                                             <span style={{ 
                                                                 color: isLate ? '#dc3545' : 'inherit', 
