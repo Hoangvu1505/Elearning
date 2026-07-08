@@ -48,7 +48,7 @@ const LoginForm: React.FC = () => {
 
             <div className="form-group">
                 <label>Email hoặc Mã số</label>
-                <input type="text" value={email} onChange={e => setEmail(e.target.value)} className="form-control" placeholder="Email hoặc mã số (VD: admin@hcmus.edu.vn)" required />
+                <input type="text" value={email} onChange={e => setEmail(e.target.value)} className="form-control" placeholder="Email hoặc mã số (VD: abc@gmail.com)" required />
             </div>
             <div className="form-group mb-6">
                 <label>Mật khẩu</label>

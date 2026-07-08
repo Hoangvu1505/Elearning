@@ -183,8 +183,8 @@ namespace ElearningPlatform.Controllers
                     Id = a.Id,
                     Title = a.Title,
                     Description = a.Description,
-                    DueDate = DateTime.SpecifyKind(a.DueDate, DateTimeKind.Utc),
-                    CreatedAt = DateTime.SpecifyKind(a.CreatedAt, DateTimeKind.Utc),
+                    DueDate = a.DueDate,
+                    CreatedAt = a.CreatedAt,
                     FilePath = a.FilePath,
                     FileName = a.FileName,
                     HasSubmitted = hasSubmitted
