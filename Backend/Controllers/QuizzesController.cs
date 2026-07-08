@@ -259,5 +259,30 @@ namespace ElearningPlatform.Controllers
 
             return Ok(result);
         }
+
+        // 6. Xóa bài trắc nghiệm (Chỉ Giáo viên hoặc Admin)
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteQuiz(int id)
+        {
+            var userId = GetUserId();
+            var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound(new { message = "Bài trắc nghiệm không tồn tại" });
+
+            var classroom = await _context.Classes.FindAsync(quiz.ClassId);
+            if (classroom == null) return NotFound();
+
+            if (role == "Teacher" && classroom.TeacherId != userId)
+            {
+                return Forbid();
+            }
+
+            _context.Quizzes.Remove(quiz);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Xóa bài trắc nghiệm thành công!" });
+        }
     }
 }

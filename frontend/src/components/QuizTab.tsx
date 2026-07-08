@@ -72,6 +72,20 @@ const QuizTab: React.FC<QuizTabProps> = ({ classId }) => {
     }
   };
 
+  const handleDeleteQuiz = async (quizId: number, title: string) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa bài trắc nghiệm "${title}" không? Hành động này sẽ xóa toàn bộ câu hỏi và kết quả làm bài của học sinh.`)) {
+      return;
+    }
+    try {
+      await api.delete(`/quizzes/${quizId}`);
+      alert('Xóa bài trắc nghiệm thành công!');
+      fetchQuizzes();
+    } catch (error: any) {
+      console.error('Failed to delete quiz', error);
+      alert('Lỗi: ' + (error.response?.data?.message || 'Không thể xóa bài trắc nghiệm'));
+    }
+  };
+
   if (activeQuizId !== null) {
     return (
       <QuizView 
@@ -152,13 +166,22 @@ const QuizTab: React.FC<QuizTabProps> = ({ classId }) => {
                 
                 <div className="flex gap-2">
                   {canManage && (
-                    <button 
-                      className="btn btn-outline" 
-                      onClick={() => handleOpenSubmissions(quiz)}
-                      style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                    >
-                      Bảng điểm
-                    </button>
+                    <>
+                      <button 
+                        className="btn btn-outline" 
+                        onClick={() => handleOpenSubmissions(quiz)}
+                        style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                      >
+                        Bảng điểm
+                      </button>
+                      <button 
+                        className="btn" 
+                        onClick={() => handleDeleteQuiz(quiz.id, quiz.title)}
+                        style={{ padding: '6px 12px', fontSize: '0.85rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        🗑️ Xóa
+                      </button>
+                    </>
                   )}
                   
                   {!canManage && (
